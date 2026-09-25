@@ -17,7 +17,7 @@ app = Flask(__name__)
 app.secret_key = "koi-bhi-random-secret-string-yahan"  # Session ke liye zaroori
 
 # ===== 3. Gemini Model Setup =====
-model = genai.GenerativeModel('gemini-3.6-flash')
+model = genai.GenerativeModel('gemini-2.5-flash')
 
 
 # ===== 4. Home Page Route =====
