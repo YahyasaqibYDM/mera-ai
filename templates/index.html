@@ -32,7 +32,6 @@
             overflow: hidden;
         }
 
-        /* ===== LAYOUT ===== */
         .app {
             display: flex;
             height: 100vh;
@@ -218,6 +217,27 @@
             margin-bottom: 6px;
         }
 
+        /* File preview in user message */
+        .message-file-preview {
+            margin-top: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #333;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .message-file-preview img {
+            max-width: 200px;
+            max-height: 200px;
+            display: block;
+            margin-top: 8px;
+            border: 1px solid var(--border-color);
+        }
+
         /* ===== WELCOME SCREEN ===== */
         .welcome {
             max-width: 720px;
@@ -288,10 +308,37 @@
             border: 1px solid var(--border-color);
             padding: 8px 8px 8px 16px;
             transition: border-color 0.15s;
+            position: relative;
         }
 
         .input-wrapper:focus-within {
             border-color: #666;
+        }
+
+        /* Attach button */
+        .attach-btn {
+            background: transparent;
+            color: var(--text-secondary);
+            border: none;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.15s;
+            flex-shrink: 0;
+            font-size: 18px;
+            margin-right: 4px;
+        }
+
+        .attach-btn:hover {
+            color: var(--accent);
+        }
+
+        .attach-btn svg {
+            width: 20px;
+            height: 20px;
         }
 
         textarea {
@@ -306,6 +353,7 @@
             padding: 10px 8px;
             max-height: 200px;
             line-height: 1.5;
+            min-width: 0;
         }
 
         textarea::placeholder {
@@ -338,6 +386,71 @@
         .send-btn svg {
             width: 18px;
             height: 18px;
+        }
+
+        /* File preview before sending */
+        .file-preview-box {
+            max-width: 900px;
+            margin: 0 auto 8px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            padding: 10px 14px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .file-preview-box.active {
+            display: flex;
+        }
+
+        .file-preview-box img {
+            max-width: 50px;
+            max-height: 50px;
+            border: 1px solid var(--border-color);
+        }
+
+        .file-preview-box .file-icon {
+            font-size: 24px;
+        }
+
+        .file-preview-box .file-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .file-preview-box .file-name {
+            color: var(--text-primary);
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-preview-box .file-size {
+            font-size: 11px;
+            color: #777;
+        }
+
+        .file-preview-box .remove-file {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            width: 26px;
+            height: 26px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.15s;
+        }
+
+        .file-preview-box .remove-file:hover {
+            color: #ff6b6b;
+            border-color: #ff6b6b;
         }
 
         .input-hint {
@@ -561,6 +674,11 @@
             .message-content td {
                 padding: 6px 8px;
             }
+
+            .message-file-preview img {
+                max-width: 150px;
+                max-height: 150px;
+            }
         }
 
         @media (max-width: 400px) {
@@ -581,7 +699,6 @@
             </button>
             <div class="sidebar-footer">
                 Powered by AI Integration<br>
-                
             </div>
         </aside>
 
@@ -599,7 +716,7 @@
                 <!-- Welcome Screen -->
                 <div class="welcome" id="welcome">
                     <h1>How can I help you today?</h1>
-                    <p>Ask me anything — questions, coding, or any topic</p>
+                    <p>Ask me anything — or upload an image/PDF to analyze</p>
                     <div class="suggestions">
                         <button class="suggestion" onclick="useSuggestion('How do I read a file in Python?')">
                             <strong>Python Help</strong>
@@ -622,7 +739,29 @@
             </div>
 
             <div class="input-container">
+                <!-- File Preview Box -->
+                <div class="file-preview-box" id="filePreview">
+                    <div id="filePreviewContent"></div>
+                    <div class="file-info">
+                        <div class="file-name" id="fileName"></div>
+                        <div class="file-size" id="fileSize"></div>
+                    </div>
+                    <button class="remove-file" onclick="removeFile()">✕</button>
+                </div>
+
                 <div class="input-wrapper">
+                    <!-- Hidden file input -->
+                    <input type="file" id="fileInput" style="display:none" 
+                           accept="image/*,.pdf,.txt,.csv,.md"
+                           onchange="handleFileSelect(event)">
+                    
+                    <!-- Attach button -->
+                    <button class="attach-btn" onclick="document.getElementById('fileInput').click()" title="Attach file">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                        </svg>
+                    </button>
+
                     <textarea 
                         id="userInput" 
                         placeholder="Type your message here..." 
@@ -642,7 +781,6 @@
     </div>
 
     <script>
-        // Configure marked.js
         marked.setOptions({
             breaks: true,
             gfm: true,
@@ -653,6 +791,13 @@
         const messagesDiv = document.getElementById('messages');
         const userInput = document.getElementById('userInput');
         const sendBtn = document.getElementById('sendBtn');
+        const fileInput = document.getElementById('fileInput');
+        const filePreview = document.getElementById('filePreview');
+        const filePreviewContent = document.getElementById('filePreviewContent');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+
+        let selectedFile = null;
 
         // Auto-resize textarea
         userInput.addEventListener('input', () => {
@@ -660,7 +805,7 @@
             userInput.style.height = Math.min(userInput.scrollHeight, 200) + 'px';
         });
 
-        // Enter to send, Shift+Enter for new line
+        // Enter to send
         userInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -678,7 +823,53 @@
             if (welcome) welcome.remove();
         }
 
-        function addMessage(text, sender) {
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Size check (20MB)
+            if (file.size > 20 * 1024 * 1024) {
+                alert('File 20MB se bari hai. Chhoti file select karein.');
+                fileInput.value = '';
+                return;
+            }
+
+            selectedFile = file;
+            
+            // Show preview
+            fileName.textContent = file.name;
+            fileSize.textContent = formatFileSize(file.size);
+            
+            // Image preview
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    filePreviewContent.innerHTML = `<img src="${e.target.result}" alt="preview">`;
+                };
+                reader.readAsDataURL(file);
+            } else if (file.type === 'application/pdf') {
+                filePreviewContent.innerHTML = '<span class="file-icon">📄</span>';
+            } else {
+                filePreviewContent.innerHTML = '<span class="file-icon">📝</span>';
+            }
+            
+            filePreview.classList.add('active');
+        }
+
+        function removeFile() {
+            selectedFile = null;
+            fileInput.value = '';
+            filePreview.classList.remove('active');
+            filePreviewContent.innerHTML = '';
+        }
+
+        function addMessage(text, sender, fileInfo = null) {
             hideWelcome();
             
             const div = document.createElement('div');
@@ -686,10 +877,21 @@
             
             const initial = sender === 'user' ? 'Y' : 'AI';
             
+            let fileHtml = '';
+            if (fileInfo) {
+                if (fileInfo.type && fileInfo.type.startsWith('image/') && fileInfo.dataUrl) {
+                    fileHtml = `<div class="message-file-preview"><img src="${fileInfo.dataUrl}" alt="${fileInfo.name}"></div>`;
+                } else {
+                    const icon = fileInfo.type === 'application/pdf' ? '📄' : '📝';
+                    fileHtml = `<div class="message-file-preview">${icon} ${fileInfo.name} (${formatFileSize(fileInfo.size)})</div>`;
+                }
+            }
+            
             div.innerHTML = `
                 <div class="avatar ${sender === 'user' ? 'user-avatar' : 'ai-avatar'}">${initial}</div>
                 <div class="message-content">
                     <div class="message-label">${sender === 'user' ? 'You' : 'AI Assistant'}</div>
+                    ${fileHtml}
                     <div class="text"></div>
                 </div>
             `;
@@ -731,19 +933,47 @@
 
         async function sendMessage() {
             const text = userInput.value.trim();
-            if (!text) return;
+            
+            if (!text && !selectedFile) return;
 
-            addMessage(text, 'user');
+            // File info for display
+            let fileInfo = null;
+            if (selectedFile) {
+                fileInfo = {
+                    name: selectedFile.name,
+                    size: selectedFile.size,
+                    type: selectedFile.type
+                };
+                
+                // Image data URL for preview
+                if (selectedFile.type.startsWith('image/')) {
+                    fileInfo.dataUrl = await new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => resolve(e.target.result);
+                        reader.readAsDataURL(selectedFile);
+                    });
+                }
+            }
+
+            addMessage(text || '(File uploaded)', 'user', fileInfo);
+            
+            // Prepare form data
+            const formData = new FormData();
+            if (text) formData.append('message', text);
+            if (selectedFile) formData.append('file', selectedFile);
+
+            // Clear input
             userInput.value = '';
             userInput.style.height = 'auto';
+            removeFile();
+            
             sendBtn.disabled = true;
             showTyping();
 
             try {
                 const res = await fetch('/chat', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({message: text})
+                    body: formData
                 });
                 
                 const data = await res.json();
@@ -769,7 +999,7 @@
             messagesDiv.innerHTML = `
                 <div class="welcome" id="welcome">
                     <h1>How can I help you today?</h1>
-                    <p>Ask me anything — questions, coding, or any topic</p>
+                    <p>Ask me anything — or upload an image/PDF to analyze</p>
                     <div class="suggestions">
                         <button class="suggestion" onclick="useSuggestion('How do I read a file in Python?')">
                             <strong>Python Help</strong>
@@ -791,6 +1021,7 @@
                 </div>
             `;
             
+            removeFile();
             fetch('/clear', {method: 'POST'}).catch(() => {});
             userInput.focus();
         }
